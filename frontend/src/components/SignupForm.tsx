@@ -45,36 +45,39 @@ export function SignupForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div>
+      <div className="form-group">
         <label htmlFor="email">Email</label>
         <input
           id="email"
           type="text"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      <div>
+      <div className="form-group">
         <label htmlFor="password">Password</label>
         <input
           id="password"
           type="password"
+          placeholder="Min. 8 characters"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      <div>
+      <div className="form-group">
         <label htmlFor="confirmPassword">Confirm Password</label>
         <input
           id="confirmPassword"
           type="password"
+          placeholder="Repeat your password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </div>
-      {error && <p>{error}</p>}
-      {success && <p>{success}</p>}
-      <button type="submit">Sign Up</button>
+      {error && <p className="message message--error">{error}</p>}
+      {success && <p className="message message--success">{success}</p>}
+      <button type="submit" className="btn-primary">Sign Up</button>
     </form>
   );
 }
