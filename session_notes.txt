@@ -1,0 +1,706 @@
+=============================================================
+  AI STORY CARD SESSION NOTES
+  Project: STORY-01 User Signup
+  Date: 2026-04-21
+  Course: CS 4398/5394 Software Engineering Project
+=============================================================
+
+
+-------------------------------------------------------------
+SOURCE FILES
+-------------------------------------------------------------
+
+FILE: story card.txt
+---------------------
+# STORY-01: User Signup
+## Story
+As a user, I want to sign up for the web application so that I can create an
+account and log in later.
+## Acceptance Criteria
+1. The signup page has email, password, and confirm password.
+2. Email must be valid.
+3. Password must be at least 8 characters.
+4. Confirm password must match password.
+5. Duplicate email is rejected.
+6. Successful signup stores the user with a hashed password.
+7. The UI shows success or error feedback.
+
+
+FILE: April21_XPTDDwithCursor.pdf (extracted content)
+------------------------------------------------------
+Course: CS 4398/5394 Software Engineering Project — XP + Cursor
+Title: Build One Signup Story with XP in Cursor
+Subtitle: From customer story to working software with tests leading every step.
+
+Today's story:
+  As a user, I want to sign up for the web application so that I can create
+  an account and log in later.
+
+Thin slice for class:
+  email + password + confirm password, validation, duplicate check,
+  hashing, success/error UI.
+
+Live flow:
+  - Story → criteria → minimal design
+  - Plan before coding
+  - Backend TDD first
+  - API layer next
+  - Frontend TDD + implementation
+  - End-to-end check
+  - Refactor or debug
+
+Goal: trace one story all the way to working software.
+
+In scope:
+  - Signup form with email, password, and confirm password
+  - Backend POST /api/signup
+  - Validation on client and server
+  - Duplicate email check and password hashing
+  - Success or error feedback in the UI
+
+Out of scope:
+  - Login
+  - Email verification
+  - Forgot password
+  - OAuth
+  - CAPTCHA
+  - Fancy styling
+
+Done definition:
+  Tests pass, the feature meets the criteria, and the story is demoable end-to-end.
+
+
+-------------------------------------------------------------
+WORKFLOW: 10-STEP XP + TDD PROMPTS (from PDF)
+-------------------------------------------------------------
+
+PART 1 — Analysis, Design, Plan
+---------------------------------
+Prompt 1 — Story Analysis:
+  Read @docs/stories/STORY-01-signup.md
+  Extract the smallest vertical slice we can finish in one class.
+  Do not write code yet.
+  Return: story summary, acceptance criteria, backend tasks, frontend tasks.
+
+Prompt 2 — Minimal Design:
+  Using @docs/stories/STORY-01-signup.md, generate minimal Mermaid content for:
+    1. use case diagram
+    2. sequence diagram
+    3. class diagram
+  Keep them tiny and relevant to this story only.
+  Do not generate code.
+
+Prompt 3 — Implementation Plan:
+  Create a minimal implementation plan for STORY-01 signup.
+  Constraints: strict TDD, backend first, frontend second,
+  no extra features, finishable in one class.
+
+PART 2 — Backend
+-----------------
+Prompt 4 — Backend Tests First:
+  Write the smallest failing tests for @backend/src/services/AuthService.ts
+  Cover only:
+    - valid signup
+    - invalid email
+    - password too short
+    - confirm password mismatch
+    - duplicate email
+  Do not implement production code yet.
+
+Prompt 5 — Backend Implementation:
+  Implement only enough production code to make the current failing
+  AuthService tests pass.
+  Constraints: keep code minimal, no login, no JWT, no email verification.
+
+Prompt 6 — API Layer:
+  Add the smallest API-level tests for POST /api/signup.
+  Cover success, validation failure, and duplicate email.
+  Then implement the minimum controller and route behavior needed to pass.
+
+PART 3 — Frontend
+------------------
+Prompt 7 — Frontend Tests First:
+  Write the smallest failing frontend tests for
+  @frontend/src/components/SignupForm.tsx
+  Cover only:
+    - renders email, password, confirm password
+    - invalid email validation
+    - short password validation
+    - confirm password mismatch
+    - valid submit
+    - duplicate-email error
+  Do not implement the component yet.
+
+Prompt 8 — Frontend Implementation:
+  Implement only enough SignupForm and SignupPage code to make the current
+  frontend tests pass.
+  Constraints: minimal styling, simple form state, inline error messages,
+  success message on successful signup.
+
+PART 4 — Finish
+----------------
+Prompt 9 — End-to-End Check:
+  Review whether the frontend and backend are correctly wired together.
+  If anything small is missing for a basic end-to-end demo, make only the
+  smallest necessary edits.
+
+Prompt 10 — Refactor or Debug:
+  [Refactor] All tests are green. Suggest one small safe refactor and apply
+  only that refactor.
+  [Debug] A signup test is failing after a recent change. Debug systematically:
+    1. likely root cause
+    2. exact code region
+    3. smallest fix
+    4. no unrelated edits
+
+Demo checklist:
+  - Open the signup page
+  - Show invalid email feedback
+  - Show short password feedback
+  - Show mismatch feedback
+  - Show successful signup
+  - Show duplicate email rejection
+  - Confirm backend and frontend tests pass
+
+Timing plan:
+   0–10 min  Story + design   Scope the thin slice, create three tiny diagrams
+  10–15 min  Plan             Review implementation order before coding
+  15–35 min  Backend          Failing tests, then minimum service + API code
+  35–53 min  Frontend         Failing UI tests, then minimal form code
+  53–60 min  Finish           End-to-end demo plus refactor or debug
+
+
+-------------------------------------------------------------
+STEP 1 OUTPUT — Story Analysis
+(Prompt: "Read @docs/stories/STORY-01-signup.md, extract smallest vertical
+slice, do not write code, return story summary, acceptance criteria,
+backend tasks, frontend tasks.")
+-------------------------------------------------------------
+
+1. STORY SUMMARY
+----------------
+A new visitor wants to create an account by submitting an email and password.
+The system validates the input, rejects duplicates, hashes the password on
+success, and tells the user whether signup worked or failed. No login, no
+email verification, no OAuth — just the one form completing the one action.
+
+
+2. ACCEPTANCE CRITERIA
+-----------------------
+AC1 — Signup form has email, password, and confirm password fields
+AC2 — Email must be valid format
+AC3 — Password must be at least 8 characters
+AC4 — Confirm password must match password
+AC5 — Duplicate email is rejected with an error
+AC6 — Successful signup stores the user with a hashed password
+AC7 — UI shows clear success or error feedback
+
+
+3. BACKEND TASKS
+----------------
+1. AuthService.signup(email, password, confirmPassword)
+   - validates input
+   - checks for duplicate email
+   - hashes password
+   - persists user
+
+2. Unit tests for AuthService covering:
+   - valid signup
+   - invalid email
+   - short password (< 8 chars)
+   - password mismatch
+   - duplicate email
+
+3. POST /api/signup controller
+   - parses request body
+   - calls AuthService
+   - returns appropriate HTTP status + message
+
+4. API-level tests covering:
+   - 201 success
+   - 400 validation failure
+   - 409 duplicate email
+
+
+4. FRONTEND TASKS
+-----------------
+1. SignupForm component
+   - three controlled inputs: email, password, confirm password
+   - inline error messages per field
+
+2. SignupPage
+   - renders SignupForm
+   - calls POST /api/signup
+   - shows success or error feedback
+
+3. Component tests covering:
+   - all three fields render
+   - invalid email shows error
+   - short password shows error
+   - password mismatch shows error
+   - valid submit triggers API call
+   - duplicate-email error response is shown
+
+SMALLEST VERTICAL SLICE:
+  form → validation → POST /api/signup → AuthService → hashed user stored
+  → success or error message back in the UI
+
+
+-------------------------------------------------------------
+STEP 2 OUTPUT — Minimal Mermaid Diagrams
+(Prompt: "Generate minimal Mermaid content for use case, sequence, and
+class diagrams. Keep tiny, relevant to this story only. No code.")
+-------------------------------------------------------------
+
+1. USE CASE DIAGRAM
+--------------------
+flowchart LR
+    U(["User"])
+    UC1["Sign Up"]
+    UC2["Validate Input"]
+    UC3["Check Duplicate Email"]
+    UC4["Hash & Store Password"]
+
+    U --> UC1
+    UC1 --> UC2
+    UC1 --> UC3
+    UC1 --> UC4
+
+
+2. SEQUENCE DIAGRAM
+--------------------
+sequenceDiagram
+    actor User
+    participant SignupForm
+    participant POST /api/signup
+    participant AuthService
+
+    User->>SignupForm: fills email, password, confirm password
+    SignupForm->>SignupForm: client-side validation
+    SignupForm->>POST /api/signup: submit form data
+    POST /api/signup->>AuthService: signup(email, password, confirmPassword)
+    AuthService->>AuthService: validate input
+    AuthService->>AuthService: check duplicate email
+    AuthService->>AuthService: hash password & store user
+    AuthService-->>POST /api/signup: success or error
+    POST /api/signup-->>SignupForm: 201 / 400 / 409
+    SignupForm-->>User: show success or error message
+
+
+3. CLASS DIAGRAM
+-----------------
+classDiagram
+    class AuthService {
+        +signup(email, password, confirmPassword) Result
+        -validateInput(email, password, confirmPassword) void
+        -isDuplicate(email) boolean
+        -hashPassword(password) string
+    }
+
+    class SignupController {
+        +handleSignup(req, res) void
+    }
+
+    class SignupForm {
+        -email: string
+        -password: string
+        -confirmPassword: string
+        -error: string
+        -success: boolean
+        +handleSubmit() void
+    }
+
+    class User {
+        +email: string
+        +passwordHash: string
+    }
+
+    SignupController --> AuthService : calls
+    AuthService --> User : creates
+    SignupForm --> SignupController : POST /api/signup
+
+
+-------------------------------------------------------------
+STEP 3 OUTPUT — Minimal Implementation Plan
+(Prompt: "Create a minimal implementation plan for STORY-01 signup.
+Constraints: strict TDD, backend first, frontend second, no extra
+features, finishable in one class.")
+-------------------------------------------------------------
+
+PHASE 1 — Backend Service (RED → GREEN)
+-----------------------------------------
+Step 1.1 — Write failing AuthService tests:
+  - valid signup returns success
+  - invalid email format returns error
+  - password under 8 chars returns error
+  - confirm password mismatch returns error
+  - duplicate email returns error
+
+Step 1.2 — Implement AuthService to pass tests:
+  - email format validation
+  - password length check
+  - confirm password match check
+  - in-memory user store (array) — no DB setup needed in class
+  - bcrypt password hash on success
+  - return typed result: { ok: true } or { ok: false, error: string }
+
+PHASE 2 — API Layer (RED → GREEN)
+------------------------------------
+Step 2.1 — Write failing controller tests for POST /api/signup:
+  - 201 on valid input
+  - 400 on validation failure
+  - 409 on duplicate email
+
+Step 2.2 — Implement controller + route:
+  - parse { email, password, confirmPassword } from body
+  - call AuthService.signup()
+  - map result to HTTP status + JSON message
+
+PHASE 3 — Frontend (RED → GREEN)
+-----------------------------------
+Step 3.1 — Write failing SignupForm tests:
+  - renders three fields
+  - shows inline error for invalid email
+  - shows inline error for short password
+  - shows inline error for mismatch
+  - calls API on valid submit
+  - shows duplicate-email error from API response
+  - shows success message on 201
+
+Step 3.2 — Implement SignupForm + SignupPage:
+  - three controlled inputs with local state
+  - client-side validation before fetch
+  - POST /api/signup on submit
+  - inline field errors, one success message
+  - no styling beyond functional layout
+
+PHASE 4 — End-to-End Check
+-----------------------------
+  - manually verify form → API → service → stored user → UI feedback
+  - fix any wiring gaps with the smallest possible edit
+
+PHASE 5 — Refactor or Debug (pick one)
+-----------------------------------------
+  Refactor: one small, safe cleanup (e.g. extract a validate() helper)
+  Debug: locate root cause → smallest fix → rerun
+
+TIMING
+-------
+  Phase 1 — AuthService tests + implementation   ~10 min
+  Phase 2 — API layer tests + controller         ~10 min
+  Phase 3 — Frontend tests + SignupForm          ~18 min
+  Phase 4 — End-to-end wiring check              ~7 min
+  Phase 5 — Refactor or debug                    ~5 min
+
+STACK ASSUMPTIONS
+------------------
+  Backend       Node + Express + TypeScript
+  Hashing       bcrypt
+  User store    in-memory array (no DB)
+  Backend tests Jest + Supertest
+  Frontend      React + TypeScript
+  Frontend tests Jest + React Testing Library
+
+RULE: write the test first, watch it fail, write only enough code to make
+it pass, move on. Nothing gets built that isn't required by a failing test.
+
+
+-------------------------------------------------------------
+STEP 4 OUTPUT — Backend Tests First (FAILING)
+(Prompt: "Write the smallest failing tests for AuthService.ts.
+Cover: valid signup, invalid email, password too short, confirm
+password mismatch, duplicate email. Do not implement production code.")
+-------------------------------------------------------------
+
+FILES CREATED
+--------------
+  backend/package.json               — Node/Jest/ts-jest/bcrypt deps
+  backend/tsconfig.json              — TypeScript config
+  backend/jest.config.js             — ts-jest preset
+  backend/src/services/AuthService.test.ts — TESTS ONLY (no production code)
+
+TEST FILE: backend/src/services/AuthService.test.ts
+-----------------------------------------------------
+describe("AuthService.signup", () => {
+
+  it("returns ok for a valid signup")
+    signup("user@example.com", "password123", "password123")
+    → result.ok === true
+
+  it("returns error for an invalid email")
+    signup("not-an-email", "password123", "password123")
+    → result.ok === false, result.error matches /email/i
+
+  it("returns error when password is too short")
+    signup("user@example.com", "short", "short")
+    → result.ok === false, result.error matches /password/i
+
+  it("returns error when confirm password does not match")
+    signup("user@example.com", "password123", "different99")
+    → result.ok === false, result.error matches /match/i
+
+  it("returns error for a duplicate email")
+    signup twice with same email
+    → second call: result.ok === false, result.error matches /email/i
+})
+
+JEST RUN RESULT: RED (expected)
+  Error: Cannot find module './AuthService'
+  All 5 tests fail — production code does not exist yet.
+
+
+-------------------------------------------------------------
+STEP 5 OUTPUT — Backend Implementation
+(Prompt: "Implement only enough production code to make the current
+failing AuthService tests pass. No login, no JWT, no email verification.")
+-------------------------------------------------------------
+
+FILE CREATED: backend/src/services/AuthService.ts
+---------------------------------------------------
+  type SignupResult = { ok: boolean; error?: string }
+
+  interface User { email: string; passwordHash: string }
+
+  class AuthService:
+    private users: User[] = []
+
+    async signup(email, password, confirmPassword): Promise<SignupResult>
+      1. regex check email           → { ok: false, error: "Invalid email address" }
+      2. password.length < 8         → { ok: false, error: "Password must be at least 8 characters" }
+      3. password !== confirmPassword → { ok: false, error: "Passwords do not match" }
+      4. duplicate email check        → { ok: false, error: "That email is already registered" }
+      5. bcrypt.hash(password, 10)   → push user → { ok: true }
+
+CONFIG CHANGES
+---------------
+  tsconfig.json: added "esModuleInterop": true  (required for bcrypt default import)
+  SignupResult type: flattened to { ok: boolean; error?: string }
+    (discriminated union was too strict for test access without narrowing)
+
+JEST RUN RESULT: ALL GREEN
+  √ returns ok for a valid signup          (154 ms)
+  √ returns error for an invalid email       (1 ms)
+  √ returns error when password is too short (1 ms)
+  √ returns error when confirm password does not match
+  √ returns error for a duplicate email    (137 ms)
+  Tests: 5 passed, 5 total
+
+
+-------------------------------------------------------------
+STEP 6 OUTPUT — API Layer (Tests + Implementation)
+(Prompt: "Add the smallest API-level tests for POST /api/signup.
+Cover success, validation failure, and duplicate email. Then implement
+the minimum controller and route behavior needed to pass.")
+-------------------------------------------------------------
+
+DEPS ADDED
+-----------
+  express, @types/express, supertest, @types/supertest
+
+FILES CREATED
+--------------
+  backend/src/routes/signup.test.ts   — Supertest tests (written first, RED)
+  backend/src/app.ts                  — Express app (no listen, Supertest-safe)
+  backend/src/routes/signup.ts        — Route + inline controller
+
+TEST CASES
+-----------
+  POST /api/signup — 201 on valid signup        → res.body.message matches /success/i
+  POST /api/signup — 400 on validation failure  → res.body.error matches /email/i
+  POST /api/signup — 409 on duplicate email     → res.body.error matches /email/i
+
+CONTROLLER LOGIC (signup.ts)
+------------------------------
+  result.ok             → 201 { message: "Signup successful" }
+  result.error includes "already" → 409 { error }
+  anything else         → 400 { error }
+  (uses AuthService instance; no error codes, no exception types)
+
+APP SETUP (app.ts)
+-------------------
+  express() + express.json() + signupRouter mounted at /api
+  No app.listen() — keeps app importable by Supertest without binding a port
+
+JEST RUN RESULT: ALL GREEN
+  PASS src/services/AuthService.test.ts  (5 tests)
+  PASS src/routes/signup.test.ts         (3 tests)
+  Tests: 8 passed, 8 total
+
+
+-------------------------------------------------------------
+STEP 7 OUTPUT — Frontend Tests First (FAILING)
+(Prompt: "Write the smallest failing frontend tests for SignupForm.tsx.
+Cover: renders fields, invalid email, short password, mismatch, valid
+submit, duplicate-email error. Do not implement the component yet.")
+-------------------------------------------------------------
+
+FILES CREATED
+--------------
+  frontend/package.json                          — React + RTL + ts-jest deps
+  frontend/tsconfig.json                         — TS config with jsx: react-jsx
+  frontend/jest.config.js                        — jsdom env + setupFilesAfterEnv
+  frontend/src/setupTests.ts                     — imports @testing-library/jest-dom
+  frontend/src/components/SignupForm.test.tsx    — 6 failing tests (no component)
+
+TEST CASES
+-----------
+  renders email, password, confirm password
+    → getByLabelText for all 3 inputs (no interaction)
+
+  shows error for invalid email
+    → submit with bad email → findByText(/invalid email/i)
+    → client-side only, no fetch
+
+  shows error for short password
+    → submit with 5-char password → findByText(/at least 8/i)
+    → client-side only, no fetch
+
+  shows error when passwords do not match
+    → submit with mismatched passwords → findByText(/do not match/i)
+    → client-side only, no fetch
+
+  shows success message on valid submit
+    → fetch mocked to return 201 { message: "Signup successful" }
+    → findByText(/signup successful/i)
+
+  shows duplicate-email error from API
+    → fetch mocked to return 409 { error: "That email is already registered" }
+    → findByText(/already registered/i)
+
+JEST RUN RESULT: RED (expected)
+  Error: Cannot find module './SignupForm'
+  All 6 tests fail — component does not exist yet.
+
+
+-------------------------------------------------------------
+STEP 8 OUTPUT — Frontend Implementation
+(Prompt: "Implement only enough SignupForm and SignupPage code to make
+the current frontend tests pass. Minimal styling, simple form state,
+inline error messages, success message on successful signup.")
+-------------------------------------------------------------
+
+FILES CREATED
+--------------
+  frontend/src/components/SignupForm.tsx   — form component (tests target)
+  frontend/src/pages/SignupPage.tsx        — page shell wrapping SignupForm
+
+SignupForm.tsx
+--------------
+  State: email, password, confirmPassword, error, success (5 useState)
+  handleSubmit:
+    1. e.preventDefault()
+    2. client-side validation (invalid email → short password → mismatch)
+    3. fetch POST /api/signup with JSON body
+    4. setSuccess(data.message) on res.ok
+    5. setError(data.error) on !res.ok
+  Render:
+    label[htmlFor] + input[id] for each of 3 fields
+    {error && <p>{error}</p>}
+    {success && <p>{success}</p>}
+    <button type="submit">Sign Up</button>
+
+KEY DECISIONS
+--------------
+  type="text" on email input — type="email" causes jsdom native validation
+    to swallow the submit event before the React handler runs
+  Label text is exactly "Password" — tests use /^password$/i exact match
+  htmlFor + id pairing — required for getByLabelText to resolve inputs
+  Client-side validation before fetch — first 3 tests need no fetch mock
+  SignupPage is a minimal shell — tests only target SignupForm directly
+
+SignupPage.tsx
+--------------
+  <main><h1>Sign Up</h1><SignupForm /></main>
+
+JEST RUN RESULT: ALL GREEN
+  √ renders email, password, and confirm password fields  (44 ms)
+  √ shows an error for an invalid email                  (763 ms)
+  √ shows an error for a short password                  (560 ms)
+  √ shows an error when passwords do not match           (541 ms)
+  √ shows a success message on valid submit              (681 ms)
+  √ shows a duplicate-email error from the API           (746 ms)
+  Tests: 6 passed, 6 total
+
+
+-------------------------------------------------------------
+STEP 9 OUTPUT — End-to-End Check (Critical Analyst Review)
+(Prompt: "Review whether frontend and backend are correctly wired.
+Make only the smallest necessary edits.")
+-------------------------------------------------------------
+
+CRITICAL ANALYST FINDINGS (8 hard blockers)
+---------------------------------------------
+1. No backend entry point — server.ts missing, app.listen() never called
+2. No frontend entry point — no main.tsx, no index.html, no bundler
+3. No proxy — fetch("/api/signup") would 404 against Vite's dev server
+4. No CORS — browser blocks cross-origin requests without it
+5. No dev scripts in either package.json
+6. ts-node/tsx missing from backend devDependencies
+7. tsconfig module: "commonjs" wrong for Vite (needs ESNext)
+8. No try/catch around fetch — server-down causes silent UI freeze
+
+FIXES APPLIED
+--------------
+backend/src/app.ts          — added cors({ origin: "http://localhost:5173" })
+backend/src/server.ts       — created: app.listen(3001)
+backend/package.json        — added "dev": "tsx src/server.ts"; tsx installed
+frontend/index.html         — created: HTML shell with <div id="root">
+frontend/src/main.tsx       — created: ReactDOM.createRoot → SignupPage
+frontend/vite.config.ts     — created: Vite config + /api proxy → port 3001
+frontend/package.json       — added "dev": "vite", "build": "vite build"; vite installed
+frontend/tsconfig.json      — module: "ESNext", moduleResolution: "bundler"
+frontend/src/components/    — fetch wrapped in try/catch; shows "Could not
+  SignupForm.tsx               reach the server" on network failure
+
+DEMO COMMANDS
+--------------
+  Terminal 1: cd backend  && npm run dev   → http://localhost:3001
+  Terminal 2: cd frontend && npm run dev   → http://localhost:5173
+
+ALL TESTS STILL GREEN
+  frontend: 6 passed | backend: 8 passed | total: 14 passed
+
+
+-------------------------------------------------------------
+STEP 10 OUTPUT — Refactor
+(Prompt: "All tests are green. Suggest one small safe refactor and
+apply only that refactor.")
+-------------------------------------------------------------
+
+CHOSEN REFACTOR: extract validate() from handleSubmit in SignupForm.tsx
+
+WHY THIS ONE
+-------------
+  - Three validation guards were inline inside an async event handler,
+    mixing pure logic with side effects (setError, return)
+  - Extracting them into a pure function makes handleSubmit read as three
+    clean phases: validate → fetch → update state
+  - Purely internal to one file — no interface changes, no new deps,
+    tests don't care about internal structure
+
+CHANGE (SignupForm.tsx only)
+-----------------------------
+  ADDED above component:
+    function validate(email, password, confirmPassword): string | null
+      if invalid email  → return "Invalid email address"
+      if password < 8   → return "Password must be at least 8 characters"
+      if mismatch       → return "Passwords do not match"
+      return null
+
+  REPLACED in handleSubmit:
+    BEFORE: 9 lines of inline if-guards with setError + return
+    AFTER:  const validationError = validate(...)
+            if (validationError) { setError(validationError); return; }
+
+NO OTHER FILES TOUCHED
+
+FINAL TEST RESULT: ALL GREEN
+  frontend: 6 passed | backend: 8 passed | total: 14 passed
+
+
+=============================================================
+  SESSION COMPLETE — All 10 steps finished
+  Demo commands:
+    Terminal 1: cd backend  && npm run dev  → http://localhost:3001
+    Terminal 2: cd frontend && npm run dev  → http://localhost:5173
+=============================================================

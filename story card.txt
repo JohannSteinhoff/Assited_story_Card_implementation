@@ -1,0 +1,12 @@
+# STORY-01: User Signup
+## Story
+As a user, I want to sign up for the web application so that I can create an
+account and log in later.
+## Acceptance Criteria
+1. The signup page has email, password, and confirm password.
+2. Email must be valid.
+3. Password must be at least 8 characters.
+4. Confirm password must match password.
+5. Duplicate email is rejected.
+6. Successful signup stores the user with a hashed password.
+7. The UI shows success or error feedback.
